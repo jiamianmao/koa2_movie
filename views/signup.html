@@ -1,0 +1,23 @@
+{% extends './common/layout.html' %}
+
+{% block body %}
+  <div class="container">
+      <form action="/user/signup" method="post">
+        <div class="modal-header">注册</div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="signupName">用户名</label>
+                <input type="text" id='signupName' name='user[name]' class='form-control'>
+            </div>
+            <div class="form-group">
+                <label for="signupPassword">用户名</label>
+                <input type="password" id='signupPassword' name='user[password]' class='form-control'>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" type='button' data-dismiss='modal'>关闭</button>
+            <button class="btn btn-success" type='submit' data-dismiss='modal'>提交</button>
+        </div>
+    </form>
+  </div>
+{% endblock %}

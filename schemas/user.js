@@ -32,10 +32,12 @@ User.pre('save', (next) => {
         this.meta.updateAt = Date.now()
     }
 
+    // 使用bcrypt 生成一个10位数的盐
     bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
         if (err) {
             return next(err)
         }
+        // 将用户密码 + 盐 => 生成hash
         bcrypt.hash(user.password, salt, (err, hash) => {
             if (err) {
                 return next(err)

@@ -115,4 +115,21 @@ router.delete('/admin/list', async(ctx, next) => {
     }
 })
 
+router.get('/user/signup', async(ctx, next) => {
+    await ctx.render('signup')
+})
+
+router.post('/user/signup', async(ctx, next) => {
+    let user = ctx.request.body.user
+    ctx.body = user
+})
+
+router.get('/user/signin', async(ctx, next) => {
+    await ctx.render('signin')
+})
+
+router.post('/user/signin', async(ctx, next) => {
+    await ctx.ren
+})
+
 module.exports = router
