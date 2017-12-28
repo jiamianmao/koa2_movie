@@ -1,13 +1,15 @@
 const router = require('koa-router')()
 const movieModel = require('./model/movie')
 const userModel = require('./model/user')
+const session = require('koa-session')
 const _ = require('underscore')
 
 // 路由配置
-
 // index page
 router.get('/', async(ctx, next) => {
     try {
+        let _user = ctx.session.user
+        ctx.state.user = _user
         let result = await movieModel.findAll()
         await ctx.render('index', {
             title: '首页',
@@ -115,16 +117,20 @@ router.delete('/admin/list', async(ctx, next) => {
     }
 })
 
+// signup (注册)
 router.get('/user/signup', async(ctx, next) => {
     await ctx.render('signup')
 })
 
+// signup (注册表单处理)
 router.post('/user/signup', async(ctx, next) => {
     let _user = ctx.request.body.user
 
     let user = new userModel(_user)
 
-    let one = await userModel.find({name: _user.name})
+    // find 返回的是一个Array  findOne返回的null 或者 该条数据
+    let one = await userModel.findOne({name: _user.name})
+    
     if (one) {
         ctx.redirect('/')
     } else {
@@ -134,10 +140,12 @@ router.post('/user/signup', async(ctx, next) => {
     }
 })
 
+// signin (登录)
 router.get('/user/signin', async(ctx, next) => {
     await ctx.render('signin')
 })
 
+// signin (登录表单处理)
 router.post('/user/signin', async(ctx, next) => {
     let user = ctx.request.body.user
     let { name } = user
@@ -145,24 +153,29 @@ router.post('/user/signin', async(ctx, next) => {
     try {
         let one = await userModel.findOne({name: name})
         if (one) {
-            await one.comparePassword(password, (err, isMatch) => {
-                if (err) return console.log(err)
-                if (isMatch) {
-                    console.log('success')
-                } else {
-                    console.log('fail')
-                }
-            })
+            let isMatch = await one.comparePassword(password)
+            if (isMatch) {
+                ctx.session.user = one
+                return ctx.redirect('/')
+            } else {
+                console.log('fail')
+            }
         } else {
-            ctx.redirect('/')
+            return ctx.redirect('/')
         }
     } catch (e) {
         console.log(e)
     }
-    
-
 })
 
+router.get('/user/logout', async(ctx, next) => {
+    delete ctx.session.user
+    delete ctx.state.user
+
+    return ctx.redirect('/')
+})
+
+// userlist page
 router.get('/admin/userlist', async(ctx, next) => {
     try {
         let result = await userModel.findAll()

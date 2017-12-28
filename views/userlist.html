@@ -6,19 +6,19 @@
             <table class="table table-hover table-bordered">
                 <thead>
                     <tr>
-                        <th>名字</th>
+                        <th>账号</th>
+                        <th>密码</th>
                         <th>录入时间</th>
                         <th>最近更新</th>
-                        <th>密码</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in users %}
                         <tr class="item-id-{{ item._id }}">
                             <td>{{ item.name }}</td>
+                            <td>{{ item.password }}</td>
                             <td>{{ moment(item.meta.createAt).format('YYYY-MM-DD H:mm:ss') }}</td>
                             <td>{{ moment(item.meta.updateAt).format('YYYY-MM-DD H:mm:ss') }}</td>
-                            <td>{{ item.password }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

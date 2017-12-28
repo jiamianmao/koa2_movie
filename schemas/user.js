@@ -45,19 +45,20 @@ User.pre('save', function (next) {
 })
 
 User.methods = {
-    comparePassword (_password, cb) {
-        bcrypt.compare(_password, this.password, (err, isMatch) => {
-            if (err) return cb(err)
-            cb(null, isMatch)
-        })
+    async comparePassword (_password) {
+        try {
+            return await bcrypt.compare(_password, this.password)
+        } catch (e) {
+            console.log(e)
+        }
     }
 }
 
 User.statics = {
-    findAll:  function () {
+    async findAll () {
         return this.find({}).sort('meta.createAt').exec()
     },
-    findById: async function (id) {
+    async findById (id) {
         return this.findOne({_id: id})
     }
 }
