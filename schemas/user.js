@@ -4,12 +4,12 @@ const SALT_WORK_FACTOR = 10
 
 const User = new mongoose.Schema({
     name: {
-        unique: true,
-        type: String
+        type: String,
+        unique: true
     },
     password: {
-        unique: true,
-        type: String
+        type: String,
+        unique: true
     },
     meta: {
         createAt: {
@@ -23,8 +23,8 @@ const User = new mongoose.Schema({
     }
 })
 
-User.pre('save', (next) => {
-    const user = this
+User.pre('save', function (next) {
+    let user = this
     if (this.isNew) {
         this.meta.createdAt = Date.now()
         this.meta.updateAt = Date.now()
@@ -34,24 +34,27 @@ User.pre('save', (next) => {
 
     // 使用bcrypt 生成一个10位数的盐
     bcrypt.genSalt(SALT_WORK_FACTOR, (err, salt) => {
-        if (err) {
-            return next(err)
-        }
+        if (err) return next(err)
         // 将用户密码 + 盐 => 生成hash
         bcrypt.hash(user.password, salt, (err, hash) => {
-            if (err) {
-                return next(err)
-            }
+            if (err) return next(err)
             user.password = hash
             next()
         })
     })
-
-    next()
 })
 
+User.methods = {
+    comparePassword (_password, cb) {
+        bcrypt.compare(_password, this.password, (err, isMatch) => {
+            if (err) return cb(err)
+            cb(null, isMatch)
+        })
+    }
+}
+
 User.statics = {
-    findAll: async function () {
+    findAll:  function () {
         return this.find({}).sort('meta.createAt').exec()
     },
     findById: async function (id) {

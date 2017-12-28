@@ -1,5 +1,6 @@
 const router = require('koa-router')()
 const movieModel = require('./model/movie')
+const userModel = require('./model/user')
 const _ = require('underscore')
 
 // 路由配置
@@ -97,7 +98,6 @@ router.get('/admin/list', async(ctx, next) => {
     } catch (e) {
         console.log(e)
     }
-    
 })
 
 // list delete movie
@@ -120,8 +120,18 @@ router.get('/user/signup', async(ctx, next) => {
 })
 
 router.post('/user/signup', async(ctx, next) => {
-    let user = ctx.request.body.user
-    ctx.body = user
+    let _user = ctx.request.body.user
+
+    let user = new userModel(_user)
+
+    let one = await userModel.find({name: _user.name})
+    if (one) {
+        ctx.redirect('/')
+    } else {
+        await user.save()
+        
+        ctx.redirect('/admin/userlist')
+    }
 })
 
 router.get('/user/signin', async(ctx, next) => {
@@ -129,7 +139,40 @@ router.get('/user/signin', async(ctx, next) => {
 })
 
 router.post('/user/signin', async(ctx, next) => {
-    await ctx.ren
+    let user = ctx.request.body.user
+    let { name } = user
+    let { password } = user
+    try {
+        let one = await userModel.findOne({name: name})
+        if (one) {
+            await one.comparePassword(password, (err, isMatch) => {
+                if (err) return console.log(err)
+                if (isMatch) {
+                    console.log('success')
+                } else {
+                    console.log('fail')
+                }
+            })
+        } else {
+            ctx.redirect('/')
+        }
+    } catch (e) {
+        console.log(e)
+    }
+    
+
+})
+
+router.get('/admin/userlist', async(ctx, next) => {
+    try {
+        let result = await userModel.findAll()
+        await ctx.render('userlist', {
+            title: '用户列表页',
+            users: result
+        })
+    } catch (e) {
+        console.log(e)
+    }
 })
 
 module.exports = router
