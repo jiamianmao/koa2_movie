@@ -2,7 +2,7 @@ const Koa = require('koa')
 const path = require('path')
 const bodyParser = require('koa-bodyparser')
 const nunjucks = require('koa-nunjucks-2')
-const router = require('./router')
+const router = require('./config/routes')
 const mongoose = require('mongoose')
 const moment = require('moment')
 const static = require('koa-static')
@@ -10,6 +10,7 @@ const session = require('koa-session')
 const PORT = process.env.PORT || 3000
 const app = new Koa()
 
+// session 配置
 app.keys = ['some secret hurr']
 const CONFIG = {
     key: 'koa:sess', /** (string) cookie key (default is koa:sess) */
@@ -40,7 +41,8 @@ app.use(static(path.join(__dirname, 'public')))
 // 类似express的 app.local
 app.use(async(ctx, next) => {
     ctx.state = {
-        moment
+        moment: moment,
+        user: ctx.session.user
     }
     await next()
 })
@@ -51,11 +53,16 @@ app.use(bodyParser())
 // nunjucks 配置
 app.use(nunjucks({
     ext: 'html',
-    path: path.join(__dirname, 'views'),
+    path: path.join(__dirname, 'app/views'),
     nunjucksConfig: {
         trimBlocks: true // 开启转义 防止xss
     }
 }))
+
+if (process.env.NODE_ENV === 'development') {
+    // 开发配置
+    mongoose.set('debug', true)
+  }
 
 // 路由配置
 app.use(router.routes()).use(router.allowedMethods())
